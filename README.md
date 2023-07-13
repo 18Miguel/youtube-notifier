@@ -36,8 +36,8 @@ notifier.on(YouTubeNotifier.ERROR_EVENT, error => {
   console.error(`Error: ${error}`);
 });
 
-// Start monitoring
-notifier.start();
+// Stop monitoring after 10 seconds
+setTimeout(() => { notifier.stop(); }, 1000 * 10);
 ```
 
 ## API
