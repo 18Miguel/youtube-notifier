@@ -1,6 +1,6 @@
 const EventEmitter = require('events');
 const RSSParser = require('rss-parser');
-const FileCache = require('FileCache');
+const FileCache = require('file-cache');
 
 class YouTubeNotifier extends EventEmitter {
 	static NEW_VIDEO_EVENT = 'new_video';

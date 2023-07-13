@@ -14,7 +14,7 @@
         "Notifier"
     ],
     "dependencies": {
-        "FileCache": "18Miguel/FileCache",
+        "file-cache": "18Miguel/file-cache",
         "rss-parser": "^3.13.0"
     },
     "directories": {

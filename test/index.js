@@ -2,8 +2,8 @@ const YouTubeNotifier = require('../youtube-notifier');
 
 const notifier = new YouTubeNotifier(30);
 
-notifier.on(YouTubeNotifier.NEW_VIDEO_EVENT, video => {
-  console.log(`New video: ${JSON.stringify(video, null, 2)}`);
+notifier.on(YouTubeNotifier.NEW_VIDEO_EVENT, videoInfo => {
+  console.log(`New video: ${JSON.stringify(videoInfo, null, 2)}`);
 });
 
 notifier.on(YouTubeNotifier.INFO_EVENT, message => {
