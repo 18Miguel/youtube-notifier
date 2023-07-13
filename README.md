@@ -74,15 +74,15 @@ Removes the specified channel IDs from the YouTubeNotifier.
 
 ### Events
 
-#### `new_video`
+#### `YouTubeNotifier.NEW_VIDEO_EVENT`
 
 Emitted when a new video is found.
 
-#### `info`
+#### `YouTubeNotifier.INFO_EVENT`
 
 Emitted for informational messages.
 
-#### `error`
+#### `YouTubeNotifier.ERROR_EVENT`
 
 Emitted when an error occurs.
 
