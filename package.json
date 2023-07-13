@@ -1,0 +1,30 @@
+{
+    "name": "youtube-notifier",
+    "author": "18Miguel",
+    "version": "1.0.0",
+    "description": "",
+    "private": true,
+    "license": "MIT",
+    "main": "youtube-notifier.js",
+    "scripts": {
+        "test": "node test/index.js"
+    },
+    "keywords": [
+        "YouTube",
+        "Notifier"
+    ],
+    "dependencies": {
+        "FileCache": "18Miguel/FileCache",
+        "rss-parser": "^3.13.0"
+    },
+    "directories": {
+        "test": "test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "youtube-notifier"
+    },
+    "devDependencies": {
+        "@types/node": "^20.4.2"
+    }
+}
