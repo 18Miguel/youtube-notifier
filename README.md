@@ -23,7 +23,7 @@ notifier.addChannels('CHANNEL_ID_1', 'CHANNEL_ID_2');
 
 // Listen for new video events
 notifier.on(YouTubeNotifier.NEW_VIDEO_EVENT, videoInfo => {
-  console.log(`New video: ${videoInfo.title}`);
+  console.log(`New video: ${JSON.stringify(videoInfo, null, 2)}`);
 });
 
 // Listen for info events
@@ -36,8 +36,8 @@ notifier.on(YouTubeNotifier.ERROR_EVENT, error => {
   console.error(`Error: ${error}`);
 });
 
-// Start monitoring
-notifier.start();
+// Stop monitoring after 10 seconds
+setTimeout(() => { notifier.stop(); }, 1000 * 10);
 ```
 
 ## API
@@ -74,15 +74,15 @@ Removes the specified channel IDs from the YouTubeNotifier.
 
 ### Events
 
-#### `new_video`
+#### `YouTubeNotifier.NEW_VIDEO_EVENT`
 
 Emitted when a new video is found.
 
-#### `info`
+#### `YouTubeNotifier.INFO_EVENT`
 
 Emitted for informational messages.
 
-#### `error`
+#### `YouTubeNotifier.ERROR_EVENT`
 
 Emitted when an error occurs.
 
