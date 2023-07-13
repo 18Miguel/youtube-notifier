@@ -23,7 +23,7 @@ notifier.addChannels('CHANNEL_ID_1', 'CHANNEL_ID_2');
 
 // Listen for new video events
 notifier.on(YouTubeNotifier.NEW_VIDEO_EVENT, videoInfo => {
-  console.log(`New video: ${videoInfo.title}`);
+  console.log(`New video: ${JSON.stringify(videoInfo, null, 2)}`);
 });
 
 // Listen for info events
