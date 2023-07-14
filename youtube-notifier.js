@@ -26,8 +26,36 @@ class YouTubeNotifier extends EventEmitter {
 	 */
 
 	/**
+	 * The structure of the ChannelAdditionInfo object.
+	 * @typedef {object} ChannelAdditionInfo
+	 * @property {boolean} success - Indicates whether the channel was successfully added.
+	 * @property {string} channelID - The ID of the channel.
+	 * @property {VideoInfo} [videoInfo] - The video information for the added channel (if success is true).
+	 * @property {error} [error] - The error object (if success is false).
+	 * @property {string} [message] - A descriptive message about the channel addition (if success is false).
+	 */
+	
+
+	/**
+	 * The structure of the ChannelRemovalInfo object.
+	 * @typedef {object} ChannelRemovalInfo
+	 * @property {boolean} success - Indicates whether the channel was successfully removed.
+	 * @property {string} channelID - The ID of the channel.
+	 */
+
+	/**
+	 * The structure of the ChannelSubscribed object.
+	 * @typedef {object} ChannelSubscribed
+	 * @property {string} channelID - The ID of the channel.
+	 * @property {string} [title] - The title of the channel.
+	 * @property {string} [link] - The URL link to the channel.
+	 * @property {error} [error] - The error message (if applicable).
+	 */
+
+	/**
      * Creates an instance of YouTubeNotifier.
-     * @param {number} checkInterval - The interval in seconds (minimum 50 seconds) at which to check for new videos.
+     * @param {number} [checkInterval] - The interval in seconds (minimum 50 seconds) at which to check for new videos.
+	 * @see {@link VideoInfo} - The structure of the VideoInfo object.
      */
 	constructor(checkInterval) {
 		super();
@@ -71,11 +99,11 @@ class YouTubeNotifier extends EventEmitter {
 					resolve(VIDEO);
 				})
 				.catch(error => {
-					if (error.message == 'Status code 404') {
-						this.emit(YouTubeNotifier.INFO_EVENT, `[YouTubeNotifier] Channel not found. Channel ID: ${channelID}`);
+					/* if (error.message == 'Status code 404') {
+						this.emit(YouTubeNotifier.INFO_EVENT, `Method: getLatestVideo\nMessage: Channel not found, channel ID ${channelID}.`);
 					} else {
-						this.emit(YouTubeNotifier.ERROR_EVENT, `[YouTubeNotifier] Error: ${JSON.stringify(error, null, 2)}`);
-					}
+						this.emit(YouTubeNotifier.ERROR_EVENT, `Method: getLatestVideo\nError: ${JSON.stringify(error, null, 2)}`);
+					} */
 					reject(error);
 				});
 		});
@@ -97,59 +125,98 @@ class YouTubeNotifier extends EventEmitter {
 				}));
 		}, 1000 * this.#checkInterval);
 
-		this.emit(YouTubeNotifier.INFO_EVENT, `[YouTubeNotifier] Started checking for new videos.`);
+		this.emit(YouTubeNotifier.INFO_EVENT, 'Started checking for new videos.');
 	}
 
 	/**
 	 * Stops checking for new videos.
 	 */
 	stop() {
-		this.emit(YouTubeNotifier.INFO_EVENT, `[YouTubeNotifier] Stopped checking for new videos.`);
+		this.emit(YouTubeNotifier.INFO_EVENT, 'Stopped checking for new videos.');
 		clearInterval(this.#intervalID);
 	}
 
 	/**
-     * Adds the specified channels to the YouTubeNotifier.
-     * @param {...string} channelsIDs - The channel IDs to be added.
-     */
+	 * Adds the specified channels to the YouTubeNotifier.
+	 * @param {...string} channelsIDs - The channel IDs to be added.
+	 * @returns {Promise<Array<ChannelAdditionInfo>>} A promise that resolves with an array of objects representing the result of each channel addition.
+	 * @see {@link ChannelAdditionInfo} - The structure of the ChannelAdditionInfo object.
+	 */
 	addChannels(...channelsIDs) {
-		channelsIDs.forEach(channelID => {
+		const promises = channelsIDs.map(async (channelID) => {
 			if (!this.#channels.includes(channelID)) {
-				this.#getLatestVideo(channelID)
-					.then(video => {
-						this.#channels.push(channelID);
-						this.#cacheStorage.set(video.id, video.id);
-						this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, video);
-					})
-					.catch(error => {
-						this.emit(YouTubeNotifier.ERROR_EVENT, `[YouTubeNotifier] Failed to add channel: ${channelID}\nError: ${JSON.stringify(error, null, 2)}\n`);
-					});
+				try {
+					const video = await this.#getLatestVideo(channelID);
+					this.#channels.push(channelID);
+					this.#cacheStorage.set(video.id, video.id);
+					this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, video);
 
+					return { success: true, channelID, video };
+
+				} catch (error) {
+					this.emit(YouTubeNotifier.ERROR_EVENT, `Method: addChannels\nMessage: Failed to add channel ID ${channelID}.\nError: ${JSON.stringify(error, null, 2)}\n`);
+					return { success: false, channelID, error };
+				}
 			} else {
-				this.emit(YouTubeNotifier.INFO_EVENT, `[YouTubeNotifier] Channel already exists: ${channelID}`);
+				this.emit(YouTubeNotifier.INFO_EVENT, `Method: addChannels\nMessage: Channel ID ${channelID} already added.`);
+				return { success: false, channelID, message: 'Channel already added' };
 			}
 		});
-
+		
 		this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
+		return Promise.all(promises);
 	}
-	
+
 	/**
      * Removes the specified channels from the YouTubeNotifier.
-     * @param {...string} channelsIDs - The channel IDs to be removed.
+	 * @param {...string} channelsIDs - The channel IDs to be removed.
+	 * @returns {Promise<Array<ChannelRemovalInfo>>} A promise that resolves with an array of objects representing the result of each channel removal.
+	 * @see {@link ChannelRemovalInfo} - The structure of the ChannelRemovalInfo object.
      */
 	removeChannels(...channelsIDs) {
-		channelsIDs.forEach(channelID => {
+		const promises = channelsIDs.map(async channelID => {
 			if (this.#channels.includes(channelID)) {
 				this.#channels = this.#channels.filter(id => id !== channelID);
 				this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
 				this.#cacheStorage.delete(channelID);
-				this.emit(YouTubeNotifier.INFO_EVENT, `[YouTubeNotifier] Channel removed: ${channelID}`);
-
+				this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} removed.`);
+		
+				return { success: true, channelID };
 			} else {
-				this.emit(YouTubeNotifier.INFO_EVENT, `[YouTubeNotifier] Channel not found: ${channelID}`);
+				this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} not found.`);
+				return { success: false, channelID };
 			}
 		});
+	
+		return Promise.all(promises);
 	}
+
+	/**
+	 * Retrieves the information of the subscribed channels.
+	 * @returns {Promise<Array<ChannelSubscribed>>} A promise that resolves with an array of channel information.
+	 * @see {@link ChannelSubscribed} - The structure of the ChannelSubscribed object.
+	 */
+	getSubscribedChannels() {
+		const channelPromises = this.#channels.map(channelID => {
+		return this.#parser.parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
+			.then(response => {
+				return {
+					channelID,
+					title: response.title,
+					link: response.link
+				};
+			})
+			.catch(error => {
+				this.emit(YouTubeNotifier.ERROR_EVENT, error);
+				return {
+					channelID,
+					error: error.message
+				};
+			});
+		});
+	
+		return Promise.all(channelPromises);
+	}  
 }
 
 module.exports = YouTubeNotifier;
