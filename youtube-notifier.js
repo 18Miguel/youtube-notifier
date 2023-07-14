@@ -209,7 +209,7 @@ class YouTubeNotifier extends EventEmitter {
 				this.emit(YouTubeNotifier.ERROR_EVENT, error);
 				return {
 					channelID,
-					error: error.message
+					error: error
 				};
 			});
 		});
