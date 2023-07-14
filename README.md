@@ -97,7 +97,7 @@ The structure of the ChannelAdditionInfo object is as follows:
 - `success` (boolean): Indicates whether the channel addition was successful.
 - `channelID` (string): The ID of the channel being added.
 - `video` (VideoInfo): The video information of the latest video from the channel (if success is true).
-- `error` (Error): The error object (if success is false).
+- `error` (any): The error object (if success is false).
 - `message` (string): A descriptive message about the channel addition (if success is false).
 
 #### `removeChannels(...channelsIDs)`
@@ -123,7 +123,7 @@ The structure of the ChannelSubscribed object is as follows:
 - `channelID` (string): The ID of the channel.
 - `title` (string): The title of the channel.
 - `link` (string): The URL link to the channel.
-- `error` (string): The error message if an error occurs while retrieving channel information.
+- `error` (any): The error object if an error occurs while retrieving channel information.
 
 
 ### Events
