@@ -35,7 +35,6 @@ class YouTubeNotifier extends EventEmitter {
 	 * @property {string} [message] - A descriptive message about the channel addition (if success is false).
 	 */
 	
-
 	/**
 	 * The structure of the ChannelRemovalInfo object.
 	 * @typedef {object} ChannelRemovalInfo
@@ -53,10 +52,10 @@ class YouTubeNotifier extends EventEmitter {
 	 */
 
 	/**
-     * Creates an instance of YouTubeNotifier.
-     * @param {number} [checkInterval] - The interval in seconds (minimum 50 seconds) at which to check for new videos.
+	 * Creates an instance of YouTubeNotifier.
+	 * @param {number} [checkInterval] - The interval in seconds (minimum 50 seconds) at which to check for new videos.
 	 * @see {@link VideoInfo} - The structure of the VideoInfo object.
-     */
+	 */
 	constructor(checkInterval) {
 		super();
 		this.#parser = new RSSParser();
@@ -77,10 +76,10 @@ class YouTubeNotifier extends EventEmitter {
 	}
 
 	/**
-     * Retrieves the latest video for the given channel ID.
-     * @param {string} channelID - The ID of the YouTube channel.
-     * @returns {Promise<VideoInfo>} A Promise that resolves with the latest video information.
-     */
+	 * Retrieves the latest video for the given channel ID.
+	 * @param {string} channelID - The ID of the YouTube channel.
+	 * @returns {Promise<VideoInfo>} A Promise that resolves with the latest video information.
+	 */
 	#getLatestVideo(channelID) {
 		return new Promise((resolve, reject) => {
 			this.#parser.parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
@@ -168,11 +167,11 @@ class YouTubeNotifier extends EventEmitter {
 	}
 
 	/**
-     * Removes the specified channels from the YouTubeNotifier.
+	 * Removes the specified channels from the YouTubeNotifier.
 	 * @param {...string} channelsIDs - The channel IDs to be removed.
 	 * @returns {Promise<Array<ChannelRemovalInfo>>} A promise that resolves with an array of objects representing the result of each channel removal.
 	 * @see {@link ChannelRemovalInfo} - The structure of the ChannelRemovalInfo object.
-     */
+	 */
 	removeChannels(...channelsIDs) {
 		const promises = channelsIDs.map(async channelID => {
 			if (this.#channels.includes(channelID)) {
