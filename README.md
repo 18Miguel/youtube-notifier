@@ -94,11 +94,14 @@ Adds the specified channel IDs to the YouTubeNotifier.
 
 ##### ChannelAdditionInfo Object
 The structure of the ChannelAdditionInfo object is as follows:
-- `success` (boolean): Indicates whether the channel addition was successful.
+- `result` (ChannelAdditionResult): The result of the channel addition.
 - `channelID` (string): The ID of the channel being added.
 - `video` (VideoInfo): The video information of the latest video from the channel (if success is true or available).
 - `error` (any): The error object (if success is false).
 - `message` (string): A descriptive message about the channel addition (if success is false).
+
+##### ChannelAdditionResult Enum
+> `SUCCESS` `ALREADY_ADDED` `ERROR`
 
 #### `removeChannels(...channelsIDs)`
 

@@ -6,6 +6,15 @@ class YouTubeNotifier extends EventEmitter {
 	static NEW_VIDEO_EVENT = 'new_video';
 	static INFO_EVENT = 'info';
   	static ERROR_EVENT = 'error';
+	/**
+	 * Enum for channel addition result.
+	 * @enum {string}
+	 */
+	static ChannelAdditionResult = {
+		SUCCESS: 'success',
+		ALREADY_ADDED: 'already_added',
+		ERROR: 'error'
+	};
   	static #CHANNELS_IDS = 'channels_ids';
 	#parser;
 	#cacheStorage;
@@ -28,9 +37,9 @@ class YouTubeNotifier extends EventEmitter {
 	/**
 	 * The structure of the ChannelAdditionInfo object.
 	 * @typedef {object} ChannelAdditionInfo
-	 * @property {boolean} success - Indicates whether the channel was successfully added.
+	 * @property {ChannelAdditionResult} result - The result of the channel addition.
 	 * @property {string} channelID - The ID of the channel.
-	 * @property {VideoInfo} [videoInfo] - The video information for the added channel (if success is true).
+	 * @property {VideoInfo} [videoInfo] - The video information for the added channel (if success is true or available).
 	 * @property {error} [error] - The error object (if success is false).
 	 * @property {string} [message] - A descriptive message about the channel addition (if success is false).
 	 */
@@ -159,15 +168,15 @@ class YouTubeNotifier extends EventEmitter {
 						this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, lastVideo);
 					}
 
-					return { success: true, channelID, lastVideo };
+					return { result: YouTubeNotifier.ChannelAdditionResult.SUCCESS, channelID, lastVideo };
 
 				} catch (error) {
 					this.emit(YouTubeNotifier.ERROR_EVENT, `Method: addChannels\nMessage: Failed to add channel ID ${channelID}.\nError: ${JSON.stringify(error, null, 2)}\n`);
-					return { success: false, channelID, error };
+					return { result: YouTubeNotifier.ChannelAdditionResult.ERROR, channelID, error };
 				}
 			} else {
 				this.emit(YouTubeNotifier.INFO_EVENT, `Method: addChannels\nMessage: Channel ID ${channelID} already added.`);
-				return { success: false, channelID, message: 'Channel already added' };
+				return { result: YouTubeNotifier.ChannelAdditionResult.ALREADY_ADDED, channelID, message: 'Channel already added' };
 			}
 		});
 		
