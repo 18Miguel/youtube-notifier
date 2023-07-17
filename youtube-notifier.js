@@ -86,6 +86,9 @@ class YouTubeNotifier extends EventEmitter {
 				.then(response => {
 					const ITEM = response.items[0];
 					const VIDEO = {}
+
+					if (!ITEM)
+						resolve(undefined);
 					
 					VIDEO.id = ITEM.id.replace('yt:video:', '');
 					VIDEO.channelID = channelID;
@@ -145,12 +148,15 @@ class YouTubeNotifier extends EventEmitter {
 		const promises = channelsIDs.map(async (channelID) => {
 			if (!this.#channels.includes(channelID)) {
 				try {
-					const video = await this.#getLatestVideo(channelID);
+					const lastVideo = await this.#getLatestVideo(channelID);
 					this.#channels.push(channelID);
-					this.#cacheStorage.set(video.id, video.id);
-					this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, video);
 
-					return { success: true, channelID, video };
+					if (lastVideo) {
+						this.#cacheStorage.set(lastVideo.id, lastVideo.id);
+						this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, lastVideo);
+					}
+
+					return { success: true, channelID, lastVideo };
 
 				} catch (error) {
 					this.emit(YouTubeNotifier.ERROR_EVENT, `Method: addChannels\nMessage: Failed to add channel ID ${channelID}.\nError: ${JSON.stringify(error, null, 2)}\n`);
