@@ -69,7 +69,10 @@ class YouTubeNotifier extends EventEmitter {
 
 		this.#cacheStorage.clear();
 		this.#channels.forEach(channelID => this.#getLatestVideo(channelID)
-			.then(video => this.#cacheStorage.set(video.id, video.id)));
+			.then(video => {
+				if (video)
+					this.#cacheStorage.set(video.id, video.id);
+			}));
 		this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
 
 		this.start();
