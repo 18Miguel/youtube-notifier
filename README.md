@@ -1,6 +1,6 @@
 # YouTubeNotifier
 
-YouTubeNotifier allows you to monitor YouTube channels and receive notifications when new videos are uploaded. It provides an event-driven architecture for handling new video events, information events, and error events.
+You can keep an eye on your favorite YouTube channels and get notified when a new video hits the web. It provides an event-driven architecture for handling new video events, information events, and error events.
 
 ## Installation
 
