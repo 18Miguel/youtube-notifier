@@ -168,15 +168,15 @@ class YouTubeNotifier extends EventEmitter {
 						this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, lastVideo);
 					}
 
-					return { result: YouTubeNotifier.ChannelAdditionResult.SUCCESS, channelID, lastVideo };
+					return { result: YouTubeNotifier.ChannelAdditionResult.SUCCESS, channelID: channelID, videoInfo: lastVideo };
 
 				} catch (error) {
 					this.emit(YouTubeNotifier.ERROR_EVENT, `Method: addChannels\nMessage: Failed to add channel ID ${channelID}.\nError: ${JSON.stringify(error, null, 2)}\n`);
-					return { result: YouTubeNotifier.ChannelAdditionResult.ERROR, channelID, error };
+					return { result: YouTubeNotifier.ChannelAdditionResult.ERROR, channelID: channelID, error: error };
 				}
 			} else {
 				this.emit(YouTubeNotifier.INFO_EVENT, `Method: addChannels\nMessage: Channel ID ${channelID} already added.`);
-				return { result: YouTubeNotifier.ChannelAdditionResult.ALREADY_ADDED, channelID, message: 'Channel already added' };
+				return { result: YouTubeNotifier.ChannelAdditionResult.ALREADY_ADDED, channelID: channelID, message: 'Channel already added' };
 			}
 		});
 		
@@ -198,10 +198,10 @@ class YouTubeNotifier extends EventEmitter {
 				this.#cacheStorage.delete(channelID);
 				this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} removed.`);
 		
-				return { success: true, channelID };
+				return { success: true, channelID: channelID };
 			} else {
 				this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} not found.`);
-				return { success: false, channelID };
+				return { success: false, channelID: channelID };
 			}
 		});
 	
