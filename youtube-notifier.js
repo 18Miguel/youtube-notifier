@@ -218,7 +218,7 @@ class YouTubeNotifier extends EventEmitter {
 		return this.#parser.parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
 			.then(response => {
 				return {
-					channelID,
+					channelID: channelID,
 					title: response.title,
 					link: response.link
 				};
@@ -226,7 +226,7 @@ class YouTubeNotifier extends EventEmitter {
 			.catch(error => {
 				this.emit(YouTubeNotifier.ERROR_EVENT, error);
 				return {
-					channelID,
+					channelID: channelID,
 					error: error
 				};
 			});
