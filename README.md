@@ -97,7 +97,7 @@ Adds the specified channel IDs to the YouTubeNotifier.
 The structure of the ChannelAdditionInfo object is as follows:
 - `result` (ChannelAdditionResult): The result of the channel addition.
 - `channelID` (string): The ID of the channel being added.
-- `video` (VideoInfo): The video information of the latest video from the channel (if success is true or available).
+- `video` (VideoInfo): The video information of the latest video from the channel (if success is true and available).
 - `error` (any): The error object (if success is false).
 - `message` (string): A descriptive message about the channel addition (if success is false).
 
