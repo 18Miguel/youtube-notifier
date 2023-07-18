@@ -69,7 +69,7 @@ class YouTubeNotifier extends EventEmitter {
 	constructor(checkInterval) {
 		super();
 		this.#parser = new RSSParser();
-		this.#cacheStorage = new FileCache('cache_storage', __dirname);
+		this.#cacheStorage = new FileCache('cache_storage');
 		this.#checkInterval = checkInterval
 			? checkInterval < 50 ? 50 : checkInterval
 			: 60;
