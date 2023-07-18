@@ -1,4 +1,4 @@
-# YouTubeNotifier
+# YouTube Notifier
 
 You can keep an eye on your favorite YouTube channels and get notified when a new video hits the web.\
 The notifier is designed with an event-driven architecture, allowing you to handle new video events, information events, and error events seamlessly.
