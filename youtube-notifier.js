@@ -210,19 +210,6 @@ class YouTubeNotifier extends EventEmitter {
 	}
 
 	/**
-	 * Retrieves the information of the subscribed channels.
-	 * @returns {Promise<Array<ChannelInfo>>} A promise that resolves with an array of channel information.
-	 * @see {@link ChannelInfo} - The structure of the ChannelInfo object.
-	 */
-	async getSubscribedChannels() {
-		const channelPromises = await this.#channels.map(async channelID => {
-			return await this.getChannelInfo(channelID);
-		});
-	
-		return await Promise.all(channelPromises);
-	}
-
-	/**
 	 * Retrieves the information of the pretended channel.
 	 * @param {string} channelID - The ID of the YouTube channel.
 	 * @returns {Promise<ChannelInfo>} A promise that resolves with channel information.
@@ -246,6 +233,19 @@ class YouTubeNotifier extends EventEmitter {
 					error: error
 				};
 			});
+	}
+
+	/**
+	 * Retrieves the information of the subscribed channels.
+	 * @returns {Promise<Array<ChannelInfo>>} A promise that resolves with an array of channel information.
+	 * @see {@link ChannelInfo} - The structure of the ChannelInfo object.
+	 */
+	async getSubscribedChannels() {
+		const channelPromises = await this.#channels.map(async channelID => {
+			return await this.getChannelInfo(channelID);
+		});
+	
+		return await Promise.all(channelPromises);
 	}
 }
 

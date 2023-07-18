@@ -116,17 +116,25 @@ The structure of the ChannelRemovalInfo object is as follows:
 - `success` (boolean): Indicates whether the channel removal was successful.
 - `channelID` (string): The ID of the channel being removed.
 
+#### `getChannelInfo(channelID)`
+
+Retrieves the information of the pretended channel.
+
+- `channelID` (string): The ID of the YouTube channel.
+- Returns: `Promise<ChannelInfo>` - A promise that resolves with channel information.
+
 #### `getSubscribedChannels()`
 
-Retrieves the information of the subscribed channels. The method returns a promise that resolves with an array of `ChannelSubscribed` objects, representing the subscribed channels' information. If no error occurs, each object will have the `channelID`, `title`, and `link` properties. If an error occurs, the `error` property will contain the error message.
+Retrieves the information of the subscribed channels. The method returns a promise that resolves with an array of `ChannelInfo` objects, representing the subscribed channels' information. If no error occurs, each object will have the `channelID`, `title`, `link` and `lastVideo` properties. If an error occurs, the `error` property will contain the error message.
 
-- Returns: `Promise<Array<ChannelSubscribed>>` - A promise that resolves with an array of channel information.
+- Returns: `Promise<Array<ChannelInfo>>` - A promise that resolves with an array of channel information.
 
-##### ChannelSubscribed Object
-The structure of the ChannelSubscribed object is as follows:
+##### ChannelInfo Object
+The structure of the ChannelInfo object is as follows:
 - `channelID` (string): The ID of the channel.
 - `title` (string): The title of the channel.
 - `link` (string): The URL link to the channel.
+- `lastVideo` (VideoInfo): The last video from the channel (if available).
 - `error` (any): The error object if an error occurs while retrieving channel information.
 
 
