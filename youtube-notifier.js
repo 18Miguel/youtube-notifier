@@ -52,11 +52,12 @@ class YouTubeNotifier extends EventEmitter {
 	 */
 
 	/**
-	 * The structure of the ChannelSubscribed object.
-	 * @typedef {object} ChannelSubscribed
+	 * The structure of the ChannelInfo object.
+	 * @typedef {object} ChannelInfo
 	 * @property {string} channelID - The ID of the channel.
 	 * @property {string} [title] - The title of the channel.
 	 * @property {string} [link] - The URL link to the channel.
+	 * @property {VideoInfo} [lastVideo] - The last video from the channel (if available).
 	 * @property {error} [error] - The error message (if applicable).
 	 */
 
@@ -210,17 +211,32 @@ class YouTubeNotifier extends EventEmitter {
 
 	/**
 	 * Retrieves the information of the subscribed channels.
-	 * @returns {Promise<Array<ChannelSubscribed>>} A promise that resolves with an array of channel information.
-	 * @see {@link ChannelSubscribed} - The structure of the ChannelSubscribed object.
+	 * @returns {Promise<Array<ChannelInfo>>} A promise that resolves with an array of channel information.
+	 * @see {@link ChannelInfo} - The structure of the ChannelInfo object.
 	 */
-	getSubscribedChannels() {
-		const channelPromises = this.#channels.map(channelID => {
-		return this.#parser.parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
-			.then(response => {
+	async getSubscribedChannels() {
+		const channelPromises = await this.#channels.map(async channelID => {
+			return await this.getChannelInfo(channelID);
+		});
+	
+		return await Promise.all(channelPromises);
+	}
+
+	/**
+	 * Retrieves the information of the pretended channel.
+	 * @param {string} channelID - The ID of the YouTube channel.
+	 * @returns {Promise<ChannelInfo>} A promise that resolves with channel information.
+	 * @see {@link ChannelInfo} - The structure of the ChannelInfo object.
+	 */
+	async getChannelInfo(channelID) {
+		return await this.#parser.parseURL(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`)
+			.then(async response => {
+				const lastVideo = await this.#getLatestVideo(channelID);
 				return {
 					channelID: channelID,
 					title: response.title,
-					link: response.link
+					link: response.link,
+					lastVideo: lastVideo
 				};
 			})
 			.catch(error => {
@@ -230,10 +246,7 @@ class YouTubeNotifier extends EventEmitter {
 					error: error
 				};
 			});
-		});
-	
-		return Promise.all(channelPromises);
-	}  
+	}
 }
 
 module.exports = YouTubeNotifier;

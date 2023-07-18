@@ -47,4 +47,7 @@ notifier.getSubscribedChannels().then((results) => {
   results.forEach((channelSubscribed) => console.log(channelSubscribed));
 });
 
+notifier.getChannelInfo('UCGIY_O-8vW4rfX98KlMkvRg')
+  .then(channelInfo => console.log('getChannelInfo: ', channelInfo));
+
 setTimeout(() => notifier.stop(), 1000 * 5);
