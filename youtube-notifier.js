@@ -39,7 +39,7 @@ class YouTubeNotifier extends EventEmitter {
 	 * @typedef {object} ChannelAdditionInfo
 	 * @property {ChannelAdditionResult} result - The result of the channel addition.
 	 * @property {string} channelID - The ID of the channel.
-	 * @property {VideoInfo} [videoInfo] - The video information for the added channel (if success is true or available).
+	 * @property {VideoInfo} [videoInfo] - The video information for the added channel (if success is true and available).
 	 * @property {error} [error] - The error object (if success is false).
 	 * @property {string} [message] - A descriptive message about the channel addition (if success is false).
 	 */
