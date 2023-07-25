@@ -75,7 +75,8 @@ setTimeout(() => notifier.stop(), 1000 * 10);
 
 Creates an instance of YouTubeNotifier.
 
-- `checkInterval` (optional): The interval in seconds (minimum 50 seconds) at which to check for new videos.
+- `checkInterval` (number?): The interval in seconds (minimum 50 seconds) at which to check for new videos.
+- `channelsIDs` (...string?): The channels IDs to be added.
 
 
 ### Methods
