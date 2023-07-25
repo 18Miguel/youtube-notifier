@@ -1,10 +1,9 @@
-const { channel } = require('diagnostics_channel');
 const YouTubeNotifier = require('../youtube-notifier');
 
-const notifier = new YouTubeNotifier(30);
+const notifier = new YouTubeNotifier(30, 'UCGIY_O-8vW4rfX98KlMkvRg', 'crash test', 'UCKy1dAqELo0zrOtPkf0eTMw', 'UC8CX0LD98EDXl4UYX1MDCXg');
 
 notifier.on(YouTubeNotifier.NEW_VIDEO_EVENT, videoInfo => {
-  console.log('New video:', videoInfo);
+  console.log('🆕 New video:', videoInfo);
 });
 
 notifier.on(YouTubeNotifier.INFO_EVENT, message => {

@@ -59,6 +59,10 @@ notifier.getSubscribedChannels().then((results) => {
   results.forEach((channelSubscribed) => console.log(channelSubscribed));
 });
 
+// Get YouTube channel information
+notifier.getChannelInfo('CHANNEL_ID_1')
+  .then(channelInfo => console.log(channelInfo));
+
 // Stop monitoring after 10 seconds
 setTimeout(() => notifier.stop(), 1000 * 10);
 ```

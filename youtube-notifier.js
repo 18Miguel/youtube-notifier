@@ -21,6 +21,8 @@ class YouTubeNotifier extends EventEmitter {
 	#checkInterval;
 	#channels;
 	#intervalID;
+	#addChannelsExecution;
+	#removeChannelsExecution;
 
 	/**
 	 * YouTube video data object.
@@ -64,9 +66,10 @@ class YouTubeNotifier extends EventEmitter {
 	/**
 	 * Creates an instance of YouTubeNotifier.
 	 * @param {number} [checkInterval] - The interval in seconds (minimum 50 seconds) at which to check for new videos.
+	 * @param {...string} [channelsIDs] - The channel IDs to be added.
 	 * @see {@link VideoInfo} - The structure of the VideoInfo object.
 	 */
-	constructor(checkInterval) {
+	constructor(checkInterval, ...channelsIDs) {
 		super();
 		this.#parser = new RSSParser();
 		this.#cacheStorage = new FileCache('cache_storage');
@@ -76,14 +79,17 @@ class YouTubeNotifier extends EventEmitter {
 		this.#channels = this.#cacheStorage.has(YouTubeNotifier.#CHANNELS_IDS)
 			? this.#cacheStorage.take(YouTubeNotifier.#CHANNELS_IDS)
 			: [];
-
+		this.#addChannelsExecution = Promise.resolve();
+		this.#removeChannelsExecution = Promise.resolve();
 		this.#cacheStorage.clear();
+
 		this.#channels.forEach(channelID => this.#getLatestVideo(channelID)
 			.then(video => {
 				if (video)
 					this.#cacheStorage.set(video.id, video.id);
 			}));
 		this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
+		this.addChannels(...channelsIDs);
 
 		this.start();
 	}
@@ -158,31 +164,35 @@ class YouTubeNotifier extends EventEmitter {
 	 * @see {@link ChannelAdditionInfo} - The structure of the ChannelAdditionInfo object.
 	 */
 	addChannels(...channelsIDs) {
-		const promises = channelsIDs.map(async (channelID) => {
-			if (!this.#channels.includes(channelID)) {
-				try {
-					const lastVideo = await this.#getLatestVideo(channelID);
-					this.#channels.push(channelID);
+		this.#addChannelsExecution = this.#addChannelsExecution.then(async () => {
+			const promises = channelsIDs.map(async (channelID) => {
+				if (!this.#channels.includes(channelID)) {
+					try {
+						const lastVideo = await this.#getLatestVideo(channelID);
+						this.#channels.push(channelID);
 
-					if (lastVideo) {
-						this.#cacheStorage.set(lastVideo.id, lastVideo.id);
-						this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, lastVideo);
+						if (lastVideo && !this.#cacheStorage.has(lastVideo.id)) {
+							this.#cacheStorage.set(lastVideo.id, lastVideo.id);
+							this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, lastVideo);
+						}
+
+						return { result: YouTubeNotifier.ChannelAdditionResult.SUCCESS, channelID: channelID, videoInfo: lastVideo };
+
+					} catch (error) {
+						this.emit(YouTubeNotifier.ERROR_EVENT, `Method: addChannels\nMessage: Failed to add channel ID ${channelID}.\nError: ${error}\n`);
+						return { result: YouTubeNotifier.ChannelAdditionResult.ERROR, channelID: channelID, error: error };
 					}
-
-					return { result: YouTubeNotifier.ChannelAdditionResult.SUCCESS, channelID: channelID, videoInfo: lastVideo };
-
-				} catch (error) {
-					this.emit(YouTubeNotifier.ERROR_EVENT, `Method: addChannels\nMessage: Failed to add channel ID ${channelID}.\nError: ${JSON.stringify(error, null, 2)}\n`);
-					return { result: YouTubeNotifier.ChannelAdditionResult.ERROR, channelID: channelID, error: error };
+				} else {
+					this.emit(YouTubeNotifier.INFO_EVENT, `Method: addChannels\nMessage: Channel ID ${channelID} already added.`);
+					return { result: YouTubeNotifier.ChannelAdditionResult.ALREADY_ADDED, channelID: channelID, message: 'Channel already added' };
 				}
-			} else {
-				this.emit(YouTubeNotifier.INFO_EVENT, `Method: addChannels\nMessage: Channel ID ${channelID} already added.`);
-				return { result: YouTubeNotifier.ChannelAdditionResult.ALREADY_ADDED, channelID: channelID, message: 'Channel already added' };
-			}
+			});
+			
+			this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
+			return Promise.all(promises);
 		});
-		
-		this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
-		return Promise.all(promises);
+
+		return this.#addChannelsExecution;
 	}
 
 	/**
@@ -192,21 +202,25 @@ class YouTubeNotifier extends EventEmitter {
 	 * @see {@link ChannelRemovalInfo} - The structure of the ChannelRemovalInfo object.
 	 */
 	removeChannels(...channelsIDs) {
-		const promises = channelsIDs.map(async channelID => {
-			if (this.#channels.includes(channelID)) {
-				this.#channels = this.#channels.filter(id => id !== channelID);
-				this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
-				this.#cacheStorage.delete(channelID);
-				this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} removed.`);
+		this.#removeChannelsExecution = this.#removeChannelsExecution.then(async () => {
+			const promises = channelsIDs.map(async channelID => {
+				if (this.#channels.includes(channelID)) {
+					this.#channels = this.#channels.filter(id => id !== channelID);
+					this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
+					this.#cacheStorage.delete(channelID);
+					this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} removed.`);
+			
+					return { success: true, channelID: channelID };
+				} else {
+					this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} not found.`);
+					return { success: false, channelID: channelID };
+				}
+			});
 		
-				return { success: true, channelID: channelID };
-			} else {
-				this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} not found.`);
-				return { success: false, channelID: channelID };
-			}
+			return Promise.all(promises);
 		});
-	
-		return Promise.all(promises);
+
+		return this.#removeChannelsExecution;
 	}
 
 	/**
