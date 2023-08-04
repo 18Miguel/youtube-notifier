@@ -2,15 +2,15 @@ const YouTubeNotifier = require('../youtube-notifier');
 
 const notifier = new YouTubeNotifier(30, 'UCGIY_O-8vW4rfX98KlMkvRg', 'crash test', 'UCKy1dAqELo0zrOtPkf0eTMw', 'UC8CX0LD98EDXl4UYX1MDCXg');
 
-notifier.on(YouTubeNotifier.NEW_VIDEO_EVENT, videoInfo => {
+notifier.on(notifier.Events.NEW_VIDEO_EVENT, videoInfo => {
   console.log('🆕 New video:', videoInfo);
 });
 
-notifier.on(YouTubeNotifier.INFO_EVENT, message => {
+notifier.on(notifier.Events.INFO_EVENT, message => {
   console.warn('\nInfo:\n', message);
 });
 
-notifier.on(YouTubeNotifier.ERROR_EVENT, error => {
+notifier.on(notifier.Events.ERROR_EVENT, error => {
   console.error('\nError:\n', error);
 });
 
@@ -23,7 +23,7 @@ notifier.removeChannels('UCGIY_O-8vW4rfX98KlMkvRg')
   })
   .catch(error => console.error(error));
 
-notifier.addChannels('UC8CX0LD98EDXl4UYX1MDCXg', 'UCGIY_O-8vW4rfX98KlMkvRg', 'UCKy1dAqELo0zrOtPkf0eTMw', 'unknown_id', 'unknown_id2')
+notifier.addChannels(false, 'UC8CX0LD98EDXl4UYX1MDCXg', 'UCGIY_O-8vW4rfX98KlMkvRg', 'UCKy1dAqELo0zrOtPkf0eTMw', 'unknown_id', 'unknown_id2')
   .then((results) => {
     results.forEach((channelInfo) => {
       console.log(channelInfo);

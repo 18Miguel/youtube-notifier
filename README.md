@@ -35,7 +35,7 @@ notifier.on(YouTubeNotifier.ERROR_EVENT, error => {
 });
 
 // Add YouTube channel IDs to monitor
-notifier.addChannels('CHANNEL_ID_1', 'CHANNEL_ID_2', 'CHANNEL_ID_3')
+notifier.addChannels(false, 'CHANNEL_ID_1', 'CHANNEL_ID_2', 'CHANNEL_ID_3')
   .then((results) => {
     results.forEach((channelInfo) => {
       console.log(channelInfo);
@@ -79,8 +79,8 @@ Creates an instance of YouTubeNotifier.
 - `channelsIDs` (...string?): The channels IDs to be added.
 
 
-### Methods
 ##
+### Methods
 
 #### `start()`
 
@@ -91,10 +91,11 @@ Starts checking for new videos at the specified interval.
 Stops checking for new videos.
 
 
-#### `addChannels(...channelsIDs)`
+#### `addChannels(notify, ...channelsIDs)`
 
 Adds the specified channel IDs to the YouTubeNotifier.
 
+- `notify` (boolean): Whether to notify about the latest video of the added channels.
 - `...channelsIDs` (string): The channel IDs to be added.
 - Returns: `Promise<Array<ChannelAdditionInfo>>` - A promise that resolves with an array of objects representing the result of each channel addition.
 
@@ -143,10 +144,10 @@ The structure of the ChannelInfo object is as follows:
 - `error` (any): The error object if an error occurs while retrieving channel information.
 
 
-### Events
 ##
+### Events
 
-#### `YouTubeNotifier.NEW_VIDEO_EVENT`
+#### `Events.NEW_VIDEO_EVENT`
 
 Emitted when a new video is found.
 
@@ -160,11 +161,11 @@ The `VideoInfo` object represents information about a YouTube video. It has the 
 - `shortLink` (string): The shortened URL link to the video in the format "https://youtu.be/{id}".
 - `publishDate` (string): The publish date of the video in the format "YYYY-MM-DD HH:MM:SS".
 
-#### `YouTubeNotifier.INFO_EVENT`
+#### `Events.INFO_EVENT`
 
 Emitted for informational messages.
 
-#### `YouTubeNotifier.ERROR_EVENT`
+#### `Events.ERROR_EVENT`
 
 Emitted when an error occurs.
 

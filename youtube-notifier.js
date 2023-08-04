@@ -3,14 +3,12 @@ const RSSParser = require('rss-parser');
 const FileCache = require('file-cache');
 
 class YouTubeNotifier extends EventEmitter {
-	static NEW_VIDEO_EVENT = 'new_video';
-	static INFO_EVENT = 'info';
-  	static ERROR_EVENT = 'error';
-	/**
-	 * Enum for channel addition result.
-	 * @enum {string}
-	 */
-	static ChannelAdditionResult = {
+	static #YouTubeNotifierEvents = {
+		NEW_VIDEO_EVENT: 'new_video',
+		INFO_EVENT: 'info',
+		ERROR_EVENT: 'error'
+	};
+	static #ChannelAdditionResult = {
 		SUCCESS: 'success',
 		ALREADY_ADDED: 'already_added',
 		ERROR: 'error'
@@ -95,6 +93,20 @@ class YouTubeNotifier extends EventEmitter {
 	}
 
 	/**
+	 * @enum {string} Enum for YouTube Notifier events.
+	 */
+	get Events() {
+		return YouTubeNotifier.#YouTubeNotifierEvents;
+	}
+	
+	/**
+	 * @enum {string} Enum for channel addition result.
+	 */
+	get ChannelAdditionResult() {
+		return YouTubeNotifier.#ChannelAdditionResult;
+	}
+
+	/**
 	 * Retrieves the latest video for the given channel ID.
 	 * @param {string} channelID - The ID of the YouTube channel.
 	 * @returns {Promise<VideoInfo>} A Promise that resolves with the latest video information.
@@ -121,9 +133,9 @@ class YouTubeNotifier extends EventEmitter {
 				})
 				.catch(error => {
 					/* if (error.message == 'Status code 404') {
-						this.emit(YouTubeNotifier.INFO_EVENT, `Method: getLatestVideo\nMessage: Channel not found, channel ID ${channelID}.`);
+						this.emit(YouTubeNotifier.#YouTubeNotifierEvents.INFO_EVENT, `Method: getLatestVideo\nMessage: Channel not found, channel ID ${channelID}.`);
 					} else {
-						this.emit(YouTubeNotifier.ERROR_EVENT, `Method: getLatestVideo\nError: ${JSON.stringify(error, null, 2)}`);
+						this.emit(YouTubeNotifier.#YouTubeNotifierEvents.ERROR_EVENT, `Method: getLatestVideo\nError: ${JSON.stringify(error, null, 2)}`);
 					} */
 					reject(error);
 				});
@@ -141,29 +153,30 @@ class YouTubeNotifier extends EventEmitter {
 				.then(video => {
 					if (video && !this.#cacheStorage.has(video.id)) {
 						this.#cacheStorage.set(video.id, video.id);
-						this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, video);
+						this.emit(YouTubeNotifier.#YouTubeNotifierEvents.NEW_VIDEO_EVENT, video);
 					}
 				}));
 		}, 1000 * this.#checkInterval);
 
-		this.emit(YouTubeNotifier.INFO_EVENT, 'Started checking for new videos.');
+		this.emit(YouTubeNotifier.#YouTubeNotifierEvents.INFO_EVENT, 'Started checking for new videos.');
 	}
 
 	/**
 	 * Stops checking for new videos.
 	 */
 	stop() {
-		this.emit(YouTubeNotifier.INFO_EVENT, 'Stopped checking for new videos.');
+		this.emit(YouTubeNotifier.#YouTubeNotifierEvents.INFO_EVENT, 'Stopped checking for new videos.');
 		clearInterval(this.#intervalID);
 	}
 
 	/**
 	 * Adds the specified channels to the YouTubeNotifier.
+	 * @param {boolean} notify - Whether to notify about the latest video of the added channels.
 	 * @param {...string} channelsIDs - The channel IDs to be added.
 	 * @returns {Promise<Array<ChannelAdditionInfo>>} A promise that resolves with an array of objects representing the result of each channel addition.
 	 * @see {@link ChannelAdditionInfo} - The structure of the ChannelAdditionInfo object.
 	 */
-	addChannels(...channelsIDs) {
+	addChannels(notify, ...channelsIDs) {
 		this.#addChannelsExecution = this.#addChannelsExecution.then(async () => {
 			const promises = channelsIDs.map(async (channelID) => {
 				if (!this.#channels.includes(channelID)) {
@@ -171,20 +184,20 @@ class YouTubeNotifier extends EventEmitter {
 						const lastVideo = await this.#getLatestVideo(channelID);
 						this.#channels.push(channelID);
 
-						if (lastVideo && !this.#cacheStorage.has(lastVideo.id)) {
+						if (notify && (lastVideo && !this.#cacheStorage.has(lastVideo.id))) {
 							this.#cacheStorage.set(lastVideo.id, lastVideo.id);
-							this.emit(YouTubeNotifier.NEW_VIDEO_EVENT, lastVideo);
+							this.emit(YouTubeNotifier.#YouTubeNotifierEvents.NEW_VIDEO_EVENT, lastVideo);
 						}
 
-						return { result: YouTubeNotifier.ChannelAdditionResult.SUCCESS, channelID: channelID, videoInfo: lastVideo };
+						return { result: YouTubeNotifier.#ChannelAdditionResult.SUCCESS, channelID: channelID, videoInfo: lastVideo };
 
 					} catch (error) {
-						this.emit(YouTubeNotifier.ERROR_EVENT, `Method: addChannels\nMessage: Failed to add channel ID ${channelID}.\nError: ${error}\n`);
-						return { result: YouTubeNotifier.ChannelAdditionResult.ERROR, channelID: channelID, error: error };
+						this.emit(YouTubeNotifier.#YouTubeNotifierEvents.ERROR_EVENT, `Method: addChannels\nMessage: Failed to add channel ID ${channelID}.\nError: ${error}\n`);
+						return { result: YouTubeNotifier.#ChannelAdditionResult.ERROR, channelID: channelID, error: error };
 					}
 				} else {
-					this.emit(YouTubeNotifier.INFO_EVENT, `Method: addChannels\nMessage: Channel ID ${channelID} already added.`);
-					return { result: YouTubeNotifier.ChannelAdditionResult.ALREADY_ADDED, channelID: channelID, message: 'Channel already added' };
+					this.emit(YouTubeNotifier.#YouTubeNotifierEvents.INFO_EVENT, `Method: addChannels\nMessage: Channel ID ${channelID} already added.`);
+					return { result: YouTubeNotifier.#ChannelAdditionResult.ALREADY_ADDED, channelID: channelID, message: 'Channel already added' };
 				}
 			});
 			
@@ -208,11 +221,11 @@ class YouTubeNotifier extends EventEmitter {
 					this.#channels = this.#channels.filter(id => id !== channelID);
 					this.#cacheStorage.set(YouTubeNotifier.#CHANNELS_IDS, this.#channels);
 					this.#cacheStorage.delete(channelID);
-					this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} removed.`);
+					this.emit(YouTubeNotifier.#YouTubeNotifierEvents.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} removed.`);
 			
 					return { success: true, channelID: channelID };
 				} else {
-					this.emit(YouTubeNotifier.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} not found.`);
+					this.emit(YouTubeNotifier.#YouTubeNotifierEvents.INFO_EVENT, `Method: removeChannels\nMessage: Channel ID ${channelID} not found.`);
 					return { success: false, channelID: channelID };
 				}
 			});
@@ -241,7 +254,7 @@ class YouTubeNotifier extends EventEmitter {
 				};
 			})
 			.catch(error => {
-				this.emit(YouTubeNotifier.ERROR_EVENT, error);
+				this.emit(YouTubeNotifier.#YouTubeNotifierEvents.ERROR_EVENT, error);
 				return {
 					channelID: channelID,
 					error: error
