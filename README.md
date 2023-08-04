@@ -26,7 +26,7 @@ notifier.on(YouTubeNotifier.NEW_VIDEO_EVENT, videoInfo => {
 
 // Listen for info events
 notifier.on(YouTubeNotifier.INFO_EVENT, message => {
-  console.warn('Info:', message);
+  console.info('Info:', message);
 });
 
 // Listen for error events
